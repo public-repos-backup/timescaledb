@@ -5,12 +5,7 @@ Publicly disclosing bugs in a public forum puts everyone in the Timescale commun
 
 ## Supported Versions
 
-Our users should always upgrade to the latest version.
-
-| Version | Supported          |
-| ------- | ------------------ |
-| 2.6.x   | :white_check_mark: |
-| 1.x   | :x:                |
+Please take a look at our [Support Policy](https://www.timescale.com/legal/support-policy).
 
 
 ## Reporting a Vulnerability
