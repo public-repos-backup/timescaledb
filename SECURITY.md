@@ -7,6 +7,7 @@ Publicly disclosing bugs in a public forum puts everyone in the Timescale commun
 
 The supported version is always the latest major release available in our repository.
 We also release regular minor versions with fixes and corrections alongside some new features as well as patchfix releases, that you should keep upgrading to.
+Vulnerability fixes are made available as part of these patchfix releases.
  
 You can also take a look at our [Support Policy](https://www.timescale.com/legal/support-policy).
 
