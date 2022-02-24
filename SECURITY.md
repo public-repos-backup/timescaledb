@@ -1,6 +1,6 @@
 # Security Policy
 
-We aim to keep Timescale safe for everyone. 
+We aim to keep TimescaleDB safe for everyone. 
 Publicly disclosing bugs in a public forum puts everyone in the Timescale community at risk.
 
 ## Supported Versions
