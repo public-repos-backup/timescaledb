@@ -19,8 +19,11 @@ set(TEST_FILES_postgresql
     cagg_policy.sql
     cagg_refresh.sql
     cagg_watermark.sql
-    cagg_experimental.sql
     dist_views.sql
+    exp_cagg_next_gen.sql
+    exp_cagg_monthly.sql
+    exp_cagg_origin.sql
+    exp_cagg_timezone.sql
     move.sql
     partialize_finalize.sql
     reorder.sql
@@ -54,8 +57,6 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
     cagg_tableam.sql
     cagg_usage.sql
     cagg_policy_run.sql
-    cagg_monthly.sql
-    cagg_with_timezone.sql
     data_fetcher.sql
     data_node_bootstrap.sql
     data_node.sql
@@ -79,11 +80,12 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
     remote_txn_id.sql
     remote_txn_resolve.sql
     remote_txn.sql
-    telemetry_stats.sql
     transparent_decompression_queries.sql
     tsl_tables.sql
     license.sql)
-
+  if(USE_TELEMETRY)
+    list(APPEND TEST_FILES_postgresql telemetry_stats.sql)
+  endif()
 endif(CMAKE_BUILD_TYPE MATCHES Debug)
 
 set(SOLO_TESTS_postgresql
@@ -109,7 +111,7 @@ set(SOLO_TESTS_postgresql
 set(TEST_FILES_max_bgw_8)
 set(SOLO_TESTS_max_bgw_8 bgw_db_scheduler)
 if(CMAKE_BUILD_TYPE MATCHES Debug)
-  list(APPEND TEST_FILES_max_bgw_8 bgw_db_scheduler.sql)
+  list(APPEND TEST_FILES_max_bgw_8 bgw_db_scheduler.sql dist_move_chunk.sql)
 endif()
 
 set(TEST_TEMPLATES

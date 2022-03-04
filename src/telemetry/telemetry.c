@@ -18,6 +18,7 @@
 #include "version.h"
 #include "guc.h"
 #include "telemetry.h"
+#include "ts_catalog/metadata.h"
 #include "telemetry_metadata.h"
 #include "hypertable.h"
 #include "extension.h"
@@ -77,6 +78,40 @@
 static const char *related_extensions[] = {
 	PG_PROMETHEUS, PROMSCALE, POSTGIS, TIMESCALE_ANALYTICS, TIMESCALEDB_TOOLKIT,
 };
+
+/* This function counts background worker jobs by type. */
+static BgwJobTypeCount
+bgw_job_type_counts()
+{
+	ListCell *lc;
+	List *jobs = ts_bgw_job_get_all(sizeof(BgwJob), CurrentMemoryContext);
+	BgwJobTypeCount counts = { 0 };
+
+	foreach (lc, jobs)
+	{
+		BgwJob *job = lfirst(lc);
+
+		if (namestrcmp(&job->fd.proc_schema, INTERNAL_SCHEMA_NAME) == 0)
+		{
+			if (namestrcmp(&job->fd.proc_name, "policy_refresh_continuous_aggregate") == 0)
+				counts.policy_cagg++;
+			else if (namestrcmp(&job->fd.proc_name, "policy_compression") == 0)
+				counts.policy_compression++;
+			else if (namestrcmp(&job->fd.proc_name, "policy_reorder") == 0)
+				counts.policy_reorder++;
+			else if (namestrcmp(&job->fd.proc_name, "policy_retention") == 0)
+				counts.policy_retention++;
+			else if (namestrcmp(&job->fd.proc_name, "policy_telemetry") == 0)
+				counts.policy_telemetry++;
+		}
+		else
+		{
+			counts.user_defined_action++;
+		}
+	}
+
+	return counts;
+}
 
 static bool
 char_in_valid_version_digits(const char c)
@@ -181,7 +216,7 @@ get_architecture_bit_size()
 static void
 add_job_counts(JsonbParseState *state)
 {
-	BgwJobTypeCount counts = ts_bgw_job_type_counts();
+	BgwJobTypeCount counts = bgw_job_type_counts();
 
 	ts_jsonb_add_int32(state, REQ_NUM_POLICY_CAGG, counts.policy_cagg);
 	ts_jsonb_add_int32(state, REQ_NUM_POLICY_COMPRESSION, counts.policy_compression);
@@ -385,21 +420,33 @@ build_telemetry_report()
 	JsonbValue key;
 	JsonbValue *result;
 	TelemetryStats relstats;
+	VersionOSInfo osinfo;
 
 	pushJsonbValue(&parse_state, WJB_BEGIN_OBJECT, NULL);
 
 	ts_jsonb_add_int32(parse_state, REQ_TELEMETRY_VERSION, TS_TELEMETRY_VERSION);
 	ts_jsonb_add_str(parse_state,
 					 REQ_DB_UUID,
-					 DatumGetCString(
-						 DirectFunctionCall1(uuid_out, ts_telemetry_metadata_get_uuid())));
+					 DatumGetCString(DirectFunctionCall1(uuid_out, ts_metadata_get_uuid())));
 	ts_jsonb_add_str(parse_state,
 					 REQ_EXPORTED_DB_UUID,
 					 DatumGetCString(
-						 DirectFunctionCall1(uuid_out, ts_telemetry_metadata_get_exported_uuid())));
+						 DirectFunctionCall1(uuid_out, ts_metadata_get_exported_uuid())));
 	ts_jsonb_add_str(parse_state,
 					 REQ_INSTALL_TIME,
-					 format_iso8601(ts_telemetry_metadata_get_install_timestamp()));
+					 format_iso8601(ts_metadata_get_install_timestamp()));
+	ts_jsonb_add_str(parse_state, REQ_INSTALL_METHOD, TIMESCALEDB_INSTALL_METHOD);
+
+	if (ts_version_get_os_info(&osinfo))
+	{
+		ts_jsonb_add_str(parse_state, REQ_OS, osinfo.sysname);
+		ts_jsonb_add_str(parse_state, REQ_OS_VERSION, osinfo.version);
+		ts_jsonb_add_str(parse_state, REQ_OS_RELEASE, osinfo.release);
+		if (osinfo.has_pretty_version)
+			ts_jsonb_add_str(parse_state, REQ_OS_VERSION_PRETTY, osinfo.pretty_version);
+	}
+	else
+		ts_jsonb_add_str(parse_state, REQ_OS, "Unknown");
 
 	ts_jsonb_add_str(parse_state, REQ_PS_VERSION, get_pgversion_string());
 	ts_jsonb_add_str(parse_state, REQ_TS_VERSION, TIMESCALEDB_VERSION_MOD);

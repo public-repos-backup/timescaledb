@@ -22,11 +22,11 @@ import sys
 event_type = sys.argv[1]
 
 PG12_EARLIEST = "12.0"
-PG12_LATEST = "12.9"
+PG12_LATEST = "12.10"
 PG13_EARLIEST = "13.2"
-PG13_LATEST = "13.5"
+PG13_LATEST = "13.6"
 PG14_EARLIEST = "14.0"
-PG14_LATEST = "14.1"
+PG14_LATEST = "14.2"
 
 m = {"include": [],}
 
@@ -77,6 +77,16 @@ def build_release_config(overrides):
   base_config.update(overrides)
   return base_config
 
+def build_without_telemetry(overrides):
+  config = build_release_config({})
+  config.update({
+    'name': 'ReleaseWithoutTelemetry',
+    "tsdb_build_args": "-DWARNINGS_AS_ERRORS=ON -DUSE_TELEMETRY=OFF",
+    "coverage": False,
+  })
+  config.update(overrides)
+  return config
+
 def build_apache_config(overrides):
   base_config = build_debug_config({})
   apache_config = dict({
@@ -114,6 +124,8 @@ m["include"].append(build_debug_config({"pg":PG14_LATEST}))
 
 m["include"].append(build_release_config(macos_config({})))
 
+m["include"].append(build_without_telemetry({"pg":PG14_LATEST}))
+
 # if this is not a pull request e.g. a scheduled run or a push
 # to a specific branch like prerelease_test we add additional
 # entries to the matrix
@@ -124,19 +136,19 @@ if event_type != "pull_request":
   # chunk_utils is skipped because of a use after free bug in postgres 12.0 which one of our tests hit
   pg12_debug_earliest = {
     "pg": PG12_EARLIEST,
-    "installcheck_args": "SKIPS='chunk_utils' IGNORES='cluster-12 compression_ddl cagg_concurrent_refresh cagg_concurrent_refresh_dist_ht cagg_drop_chunks cagg_insert cagg_multi cagg_multi_dist_ht cagg_policy deadlock_drop_chunks_compress deadlock_recompress_chunk deadlock_dropchunks_select debug_notice dist_restore_point dropchunks_race insert_dropchunks_race isolation_nop multi_transaction_indexing read_committed_insert read_uncommitted_insert remote_create_chunk reorder_deadlock reorder_vs_insert reorder_vs_insert_other_chunk reorder_vs_select repeatable_read_insert serializable_insert serializable_insert_rollback'"
+    "installcheck_args": "SKIPS='chunk_utils' IGNORES='cluster-12 compression_ddl cagg_concurrent_refresh cagg_concurrent_refresh_dist_ht cagg_drop_chunks cagg_insert cagg_multi cagg_multi_dist_ht cagg_policy deadlock_drop_chunks_compress deadlock_recompress_chunk concurrent_query_and_drop_chunks deadlock_dropchunks_select debug_notice dist_restore_point dropchunks_race insert_dropchunks_race isolation_nop multi_transaction_indexing read_committed_insert read_uncommitted_insert remote_create_chunk reorder_deadlock reorder_vs_insert reorder_vs_insert_other_chunk reorder_vs_select repeatable_read_insert serializable_insert serializable_insert_rollback'"
   }
   m["include"].append(build_debug_config(pg12_debug_earliest))
 
   # add debug test for first supported PG13 version
   pg13_debug_earliest = {
     "pg": PG13_EARLIEST,
-    "installcheck_args": "IGNORES='compression_ddl cagg_concurrent_refresh cagg_concurrent_refresh_dist_ht cagg_drop_chunks cagg_insert cagg_multi cagg_multi_dist_ht deadlock_drop_chunks_compress deadlock_recompress_chunk deadlock_dropchunks_select dist_restore_point dropchunks_race insert_dropchunks_race isolation_nop multi_transaction_indexing read_committed_insert read_uncommitted_insert remote_create_chunk reorder_deadlock reorder_vs_insert reorder_vs_insert_other_chunk reorder_vs_select repeatable_read_insert serializable_insert serializable_insert_rollback'"
+    "installcheck_args": "IGNORES='compression_ddl cagg_concurrent_refresh cagg_concurrent_refresh_dist_ht cagg_drop_chunks cagg_insert cagg_multi cagg_multi_dist_ht deadlock_drop_chunks_compress deadlock_recompress_chunk concurrent_query_and_drop_chunks deadlock_dropchunks_select dist_restore_point dropchunks_race insert_dropchunks_race isolation_nop multi_transaction_indexing read_committed_insert read_uncommitted_insert remote_create_chunk reorder_deadlock reorder_vs_insert reorder_vs_insert_other_chunk reorder_vs_select repeatable_read_insert serializable_insert serializable_insert_rollback'"
   }
   m["include"].append(build_debug_config(pg13_debug_earliest))
 
   # add debug test for first supported PG14 version
-  m["include"].append(build_debug_config({"pg": PG14_EARLIEST}))
+  m["include"].append(build_debug_config({"pg": PG14_EARLIEST, "installcheck_args": "IGNORES='memoize'"}))
 
   # add debug test for MacOS
   m["include"].append(build_debug_config(macos_config({})))
