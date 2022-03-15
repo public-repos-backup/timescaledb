@@ -16,7 +16,7 @@ You can also take a look at our [Support Policy](https://www.timescale.com/legal
 
 ## Reporting a Vulnerability
 
-If you find a vulnerability in our software the e-mail address to use to contact the Timescale Security Team is security@timescale.com.
+If you find a vulnerability in our software, please email the Timescale Security Team at security@timescale.com.
 
 Please note that the e-mail address should only be used for reporting undisclosed security vulnerabilities in Timescale products and services. 
 We cannot accept regular bug reports or other security related queries at this address.
