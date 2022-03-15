@@ -1,7 +1,9 @@
 # Security Policy
 
 We aim to keep TimescaleDB safe for everyone. 
-Publicly disclosing security bugs in a public forum puts everyone in the Timescale community at risk.
+Publicly disclosing security bugs in a public forum can put everyone in the Timescale community at risk,
+however. Therefore, we ask that people follow the below instructions to report security vulnerability.
+The entire Timescale community thanks you!
 
 ## Supported Versions
 
