@@ -19,4 +19,6 @@ You can also take a look at our [Support Policy](https://www.timescale.com/legal
 If you find a vulnerability in our software, please email the Timescale Security Team at security@timescale.com.
 
 Please note that the e-mail address should only be used for reporting undisclosed security vulnerabilities in Timescale products and services. 
-We cannot accept regular bug reports or other security related queries at this address.
+Regular bug reports should be submitted as GitHub issues, while other _questions_ around security,
+compliance, or functionality can be made either through our support (for customers) or
+community channels (e.g., [Timescale Slack](https://slack.timescale.com/), [Forums](https://www.timescale.com/forums), etc.)
