@@ -289,3 +289,7 @@ INSERT INTO test_gapfill_overlap VALUES
 ('2020-07-06 06:01', 'forty-six', 3.1),
 ('2020-07-07 09:11', 'eleven', 10303.12),
 ('2020-07-08 08:01', 'ten', 64);
+
+ANALYZE test_gapfill;
+ANALYZE test_gapfill_overlap;
+
